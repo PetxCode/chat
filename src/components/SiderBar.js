@@ -1,57 +1,77 @@
-import React, {useState, useEffect, useContext} from 'react'
-import styled from 'styled-components'
-import DataUsageIcon from '@material-ui/icons/DataUsage';
-import ChatIcon from '@material-ui/icons/Chat';
-import MoreVertIcon from '@material-ui/icons/MoreVert';
-import img from "./2.jpg"
-import VolumeOffIcon from '@material-ui/icons/VolumeOff';
-import SearchIcon from '@material-ui/icons/Search';
-import ExpandMoreIcon from '@material-ui/icons/ExpandMore';
-import { app } from '../base';
-import moment from "moment"
-import ChatterBox from './ChatterBox';
-import { Link } from 'react-router-dom';
-import { AuthContext } from './Auth/AuthProvider';
-
+import React, { useState, useEffect, useContext } from "react";
+import styled from "styled-components";
+import DataUsageIcon from "@material-ui/icons/DataUsage";
+import ChatIcon from "@material-ui/icons/Chat";
+import MoreVertIcon from "@material-ui/icons/MoreVert";
+import img from "./2.jpg";
+import VolumeOffIcon from "@material-ui/icons/VolumeOff";
+import SearchIcon from "@material-ui/icons/Search";
+import ExpandMoreIcon from "@material-ui/icons/ExpandMore";
+import { app } from "../base";
+import moment from "moment";
+import ChatterBox from "./ChatterBox";
+import { Link } from "react-router-dom";
+import { AuthContext } from "./Auth/AuthProvider";
 
 const SiderBar = () => {
-  const {currentUser} = useContext(AuthContext)
+  const { currentUser } = useContext(AuthContext);
 
-  const [data, setData] = useState([])
-  const [user, setUser] = useState([])
+  const [data, setData] = useState([]);
+  const [user, setUser] = useState([]);
 
   // console.log("currentUser: ", currentUser.uid)
 
-  const getUserData = async() => {
-    await app.firestore().collection("user").doc(currentUser.uid).get().then(data => {
-      setUser(data.data())
-    })
-  }
+  const getUserData = async () => {
+    await app
+      .firestore()
+      .collection("user")
+      .doc(currentUser?.uid)
+      .get()
+      .then((data) => {
+        setUser(data.data());
+      });
+  };
 
-  const getData = async() => {
-    await app.firestore().collection("user")
-    .orderBy("time", "desc")
-    .onSnapshot(snapshot => {
-      const items = []
-      snapshot.forEach(doc => {
-        items.push({...doc.data(), id: doc.id})
-      })
-      setData(items)
-    })
-  }
+  const getData = async () => {
+    await app
+      .firestore()
+      .collection("user")
+      .orderBy("time", "desc")
+      .onSnapshot((snapshot) => {
+        const items = [];
+        snapshot.forEach((doc) => {
+          items.push({ ...doc.data(), id: doc.id });
+        });
+        setData(items);
+      });
+  };
 
   useEffect(() => {
-    getData()
-  }, [])
+    getData();
+  }, []);
 
   useEffect(() => {
-    getUserData()
-  }, [user])
+    getUserData();
+  }, [user]);
 
   return (
     <Container>
       <HeaderBar>
-        <Avatar src={user && user.avatar} />
+        {currentUser ? (
+          <Avatar
+            src={user && user.avatar}
+            onClick={() => {
+              app.auth().signOut();
+            }}
+          />
+        ) : (
+          <Log to="/register">
+            <AvatarLog>
+              <p>sign in</p>
+            </AvatarLog>
+          </Log>
+        )}
+
         <Icons>
           <DataUsageIcon />
           <ChatIcon />
@@ -60,7 +80,7 @@ const SiderBar = () => {
       </HeaderBar>
       <Notification>
         <Mute>
-         <VolumeOffIcon/>
+          <VolumeOffIcon />
         </Mute>
         <Info>
           <span>Get Notified of new messages</span>
@@ -69,225 +89,233 @@ const SiderBar = () => {
       </Notification>
       <Search>
         <SearchBar>
-        <SearchIcon/>
-        <Input placeholder="Search or Start a Chat" />
+          <SearchIcon />
+          <Input placeholder="Search or Start a Chat" />
         </SearchBar>
       </Search>
 
-    {
-      data.map(item => (
+      {data.map((item) => (
         <MyLink to={`/${item.id}`} key={item.id}>
-          <ChatterBox 
-          
-          items={item}
-          />
+          <ChatterBox items={item} />
         </MyLink>
-      ))
-    }
-
+      ))}
     </Container>
-  )
-}
+  );
+};
 
-export default SiderBar
-
+export default SiderBar;
 
 const MyLink = styled(Link)`
   text-decoration: none;
-  color: black
-`
+  color: black;
+`;
 
 const IconBox = styled.div`
-display: none
-`
+  display: none;
+`;
 
 const BoxHolder = styled.div`
-width: 60px;
-display: flex;
-justify-content: space-around;
+  width: 60px;
+  display: flex;
+  justify-content: space-around;
 
-.MuiSvgIcon-root{
-  display: none
-}
+  .MuiSvgIcon-root {
+    display: none;
+  }
 
-:hover{
-  .MuiSvgIcon-root{
-  display: block
- }
-} 
-`
+  :hover {
+    .MuiSvgIcon-root {
+      display: block;
+    }
+  }
+`;
 const Box = styled.div`
-background-color: #06D755;
-width: 20px;
-height: 20px;
-border-radius:10px;
-justify-content: center;
-align-items: center;
-display: flex;
-color: white;
-font-size: 10px;
-font-weight: bold;
-margin-right: 0px;
-`
+  background-color: #06d755;
+  width: 20px;
+  height: 20px;
+  border-radius: 10px;
+  justify-content: center;
+  align-items: center;
+  display: flex;
+  color: white;
+  font-size: 10px;
+  font-weight: bold;
+  margin-right: 0px;
+`;
 const Message = styled.div`
-font-size: 12px;
-`
+  font-size: 12px;
+`;
 
 const ChatBox = styled.div`
-display: flex;
-background-color: white;
-width: 100%;
-height: 60px;
-align-items: center;
-margin: 0px 0;
-border-bottom: 1px solid #c5c5c5  ;
+  display: flex;
+  background-color: white;
+  width: 100%;
+  height: 60px;
+  align-items: center;
+  margin: 0px 0;
+  border-bottom: 1px solid #c5c5c5;
 
-:hover{
-  background-color: #EDEDED;
-  cursor: pointer;
-}
-`
+  :hover {
+    background-color: #ededed;
+    cursor: pointer;
+  }
+`;
 
 const Image = styled.img`
-width: 40px;
-height: 40px;
-border-radius: 20px;
-background-color: red;
-margin: 0 10px;
-object-fit: cover;
-`
+  width: 40px;
+  height: 40px;
+  border-radius: 20px;
+  background-color: red;
+  margin: 0 10px;
+  object-fit: cover;
+`;
 const Head = styled.div`
-display:flex;
-justify-content: space-between;
-flex: 1;
-`
+  display: flex;
+  justify-content: space-between;
+  flex: 1;
+`;
 const Time = styled.div`
-font-size: 12px;
-margin-right: 10px;
-`
+  font-size: 12px;
+  margin-right: 10px;
+`;
 const Content = styled.div`
-width: 100%
-`
+  width: 100%;
+`;
 const HeaderContent = styled.div`
-margin: 0;
-font-weight: bold;
-font-size: 14px;
-`
+  margin: 0;
+  font-weight: bold;
+  font-size: 14px;
+`;
 const MessageContent = styled.div`
-display: flex;
-width: 100%;
-justify-content: space-between;
-`
+  display: flex;
+  width: 100%;
+  justify-content: space-between;
+`;
 
 const Input = styled.input`
-flex: 1;
-border-radius: 30px;
-height: 80%;
-border: 0;
-outline: none;
-font-size: 12px;
+  flex: 1;
+  border-radius: 30px;
+  height: 80%;
+  border: 0;
+  outline: none;
+  font-size: 12px;
 
-::placeholder{
-  font-family: Poppins;
-  font-weight: bold;
-  letter-spacing: 1.03px;
-}
-`
+  ::placeholder {
+    font-family: Poppins;
+    font-weight: bold;
+    letter-spacing: 1.03px;
+  }
+`;
 const SearchBar = styled.div`
-background-color: white;
-width: 96%;
-height: 80%;
-border-radius: 30px;
-display: flex;
-align-items: center;
-margin-bottom: 15px;
+  background-color: white;
+  width: 96%;
+  height: 80%;
+  border-radius: 30px;
+  display: flex;
+  align-items: center;
+  margin-bottom: 15px;
 
-.MuiSvgIcon-root{
-  padding:0 10px;
-  font-size: 19px;
-}
-
-`
+  .MuiSvgIcon-root {
+    padding: 0 10px;
+    font-size: 19px;
+  }
+`;
 const Search = styled.div`
-width: 100%;
-height: 50px;
-justify-content: center;
-align-items: center;
-display: flex;
-
-
-`
+  width: 100%;
+  height: 50px;
+  justify-content: center;
+  align-items: center;
+  display: flex;
+`;
 const Mute = styled.div`
-width: 40px;
-height: 40px;
-border-radius: 20px;
-display: flex;
-justify-content: center;
-align-items: center;
-background-color: white;
-color:#9DE1FE;
-margin-left: 10px;
-margin-right: 20px;
-
-`
+  width: 40px;
+  height: 40px;
+  border-radius: 20px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background-color: white;
+  color: #9de1fe;
+  margin-left: 10px;
+  margin-right: 20px;
+`;
 
 const Info = styled.div`
-
-span{
-  font-size: medium;
-  font-size: 14px;
-  margin:0;
-}
-p{
-   margin:0;
-   font-size: 11px;
-}
-
-:hover{
-   p{
-    text-decoration: underline;
-    cursor: pointer;
-   }
+  span {
+    font-size: medium;
+    font-size: 14px;
+    margin: 0;
   }
-`
+  p {
+    margin: 0;
+    font-size: 11px;
+  }
+
+  :hover {
+    p {
+      text-decoration: underline;
+      cursor: pointer;
+    }
+  }
+`;
 
 const Avatar = styled.img`
-width: 40px;
-height: 40px;
-border-radius: 20px;
-object-fit:cover;
-background-color: aqua;
-`
-const Icons = styled.div`
-color: #373737;
-width: 100px;
-display: flex;
-justify-content: space-between;
-margin-right:10px;
-`
+  width: 40px;
+  height: 40px;
+  border-radius: 20px;
+  object-fit: cover;
+  background-color: aqua;
+  cursor: pointer;
+`;
 
+const Log = styled(Link)`
+  text-decoration: none;
+`;
+const AvatarLog = styled.div`
+  width: 80px;
+  height: 30px;
+  border-radius: 5px;
+  object-fit: cover;
+  background-color: red;
+  cursor: pointer;
+  color: white;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+`;
+
+const Icons = styled.div`
+  color: #373737;
+  width: 100px;
+  display: flex;
+  justify-content: space-between;
+  margin-right: 10px;
+`;
 
 const Container = styled.div`
-flex: 0.4;
-display: flex;
-flex-direction: column;
-padding-top: 10px;
-border-right: 1px solid rgba(0, 0, 0, 0.05);
-box-shadow: 10px 10px 10px 0px rgba(0,0,0,0.2);
-
-`
+  flex: 0.4;
+  display: flex;
+  flex-direction: column;
+  padding-top: 10px;
+  border-right: 1px solid rgba(0, 0, 0, 0.05);
+  box-shadow: 10px 10px 10px 0px rgba(0, 0, 0, 0.2);
+  z-index: 1000;
+  margin-top: 50px;
+  background-color: #dadcd5;
+  height: 99%;
+`;
 const HeaderBar = styled.div`
-width: 100%;
-height: 50px;
-display: flex;
-justify-content: space-between;
-align-items: center;
-padding-left:10px;
-`
+  width: 100%;
+  height: 50px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding-left: 10px;
+`;
 const Notification = styled.div`
-background-color: #9DE1FE;
-display: flex;
-align-items: center;
-height: 70px;
-margin: 15px 0;
-`
+  background-color: #9de1fe;
+  display: flex;
+  align-items: center;
+  height: 70px;
+  margin: 15px 0;
+`;
